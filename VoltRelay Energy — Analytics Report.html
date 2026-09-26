@@ -1,0 +1,1093 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>VoltRelay Energy — Analytics Report</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0D1117;
+    --surface: #161B22;
+    --surface2: #1C2330;
+    --border: #21262D;
+    --accent: #00C896;
+    --accent2: #FF6B35;
+    --accent3: #6C8EFF;
+    --text: #E6EDF3;
+    --text-muted: #8B949E;
+    --text-dim: #4C5561;
+    --yellow: #F0B429;
+    --red: #F85149;
+    --green: #3FB950;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.65;
+    font-size: 15px;
+    padding-bottom: 80px;
+  }
+
+  /* ── HEADER ── */
+  .hero {
+    background: linear-gradient(135deg, #0D1117 0%, #0f1f14 50%, #0D1117 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 72px 0 60px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -120px; left: -120px;
+    width: 500px; height: 500px;
+    background: radial-gradient(circle, rgba(0,200,150,0.07) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero::after {
+    content: '';
+    position: absolute;
+    bottom: -80px; right: 10%;
+    width: 350px; height: 350px;
+    background: radial-gradient(circle, rgba(108,142,255,0.06) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .container {
+    max-width: 1060px;
+    margin: 0 auto;
+    padding: 0 32px;
+  }
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(0,200,150,0.1);
+    border: 1px solid rgba(0,200,150,0.3);
+    color: var(--accent);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    padding: 4px 12px;
+    border-radius: 20px;
+    margin-bottom: 24px;
+    text-transform: uppercase;
+  }
+  .badge::before { content: '⚡'; }
+  .hero h1 {
+    font-size: clamp(32px, 5vw, 54px);
+    font-weight: 700;
+    line-height: 1.15;
+    color: var(--text);
+    max-width: 700px;
+    margin-bottom: 16px;
+  }
+  .hero h1 span { color: var(--accent); }
+  .hero-sub {
+    color: var(--text-muted);
+    font-size: 17px;
+    font-weight: 300;
+    max-width: 600px;
+    margin-bottom: 40px;
+  }
+  .meta-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 24px;
+    border-top: 1px solid var(--border);
+    padding-top: 28px;
+  }
+  .meta-item { display: flex; flex-direction: column; gap: 3px; }
+  .meta-label { font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.05em; }
+  .meta-value { font-size: 13px; color: var(--text-muted); font-family: 'DM Mono', monospace; }
+
+  /* ── STAT CARDS ── */
+  .stats-strip {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 36px 0;
+  }
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 0;
+  }
+  .stat-card {
+    padding: 20px 28px;
+    border-right: 1px solid var(--border);
+  }
+  .stat-card:last-child { border-right: none; }
+  .stat-num {
+    font-size: 30px;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1;
+    margin-bottom: 6px;
+    font-variant-numeric: tabular-nums;
+  }
+  .stat-num.green { color: var(--accent); }
+  .stat-num.orange { color: var(--accent2); }
+  .stat-num.blue { color: var(--accent3); }
+  .stat-num.yellow { color: var(--yellow); }
+  .stat-label { font-size: 12px; color: var(--text-muted); }
+
+  /* ── SECTIONS ── */
+  .section { padding: 56px 0; border-bottom: 1px solid var(--border); }
+  .section:last-of-type { border-bottom: none; }
+
+  .section-eyebrow {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.07em;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  h2 {
+    font-size: clamp(22px, 3.5vw, 30px);
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 12px;
+    line-height: 1.25;
+  }
+  .section-intro {
+    color: var(--text-muted);
+    max-width: 720px;
+    margin-bottom: 36px;
+    font-size: 15px;
+  }
+
+  /* ── INSIGHT CARDS ── */
+  .insight-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+  .insight-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 24px;
+    position: relative;
+    transition: border-color 0.2s;
+  }
+  .insight-card:hover { border-color: rgba(0,200,150,0.3); }
+  .insight-card .ic-label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-dim);
+    margin-bottom: 8px;
+  }
+  .insight-card .ic-value {
+    font-size: 26px;
+    font-weight: 700;
+    margin-bottom: 6px;
+    font-variant-numeric: tabular-nums;
+  }
+  .insight-card .ic-desc {
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
+  .ic-good .ic-value { color: var(--accent); }
+  .ic-bad .ic-value { color: var(--red); }
+  .ic-warn .ic-value { color: var(--yellow); }
+  .ic-info .ic-value { color: var(--accent3); }
+
+  /* ── FINDING BLOCKS ── */
+  .finding-block {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 8px 8px 0;
+    padding: 20px 24px;
+    margin-bottom: 16px;
+  }
+  .finding-block.warn { border-left-color: var(--yellow); }
+  .finding-block.danger { border-left-color: var(--red); }
+  .finding-block.info { border-left-color: var(--accent3); }
+  .finding-block .fb-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 6px;
+  }
+  .finding-block .fb-body {
+    font-size: 13.5px;
+    color: var(--text-muted);
+    line-height: 1.6;
+  }
+  .finding-block .fb-stat {
+    display: inline-block;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 2px 8px;
+    margin-top: 8px;
+    color: var(--text);
+  }
+
+  /* ── TABLE ── */
+  .data-table-wrap {
+    overflow-x: auto;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    margin-bottom: 24px;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  thead th {
+    background: var(--surface2);
+    color: var(--text-muted);
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 12px 16px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+  tbody tr { border-bottom: 1px solid var(--border); }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: var(--surface2); }
+  tbody td {
+    padding: 11px 16px;
+    color: var(--text-muted);
+    font-variant-numeric: tabular-nums;
+  }
+  td.highlight { color: var(--text); font-weight: 500; }
+  .pill {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+  .pill-green { background: rgba(63,185,80,0.15); color: var(--green); }
+  .pill-red { background: rgba(248,81,73,0.15); color: var(--red); }
+  .pill-yellow { background: rgba(240,180,41,0.15); color: var(--yellow); }
+  .pill-blue { background: rgba(108,142,255,0.15); color: var(--accent3); }
+
+  /* ── VISUAL BAR ── */
+  .bar-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 10px;
+  }
+  .bar-label { font-size: 13px; color: var(--text-muted); min-width: 110px; }
+  .bar-track { flex: 1; background: var(--surface2); border-radius: 4px; height: 10px; overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 4px; }
+  .bar-val { font-size: 12px; font-family: 'DM Mono', monospace; color: var(--text); min-width: 50px; text-align: right; }
+
+  /* ── RISK MATRIX ── */
+  .risk-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 28px;
+  }
+  .risk-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 18px 20px;
+    text-align: center;
+  }
+  .risk-icon { font-size: 28px; margin-bottom: 8px; }
+  .risk-title { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+  .risk-desc { font-size: 12px; color: var(--text-muted); line-height: 1.5; }
+
+  /* ── RECOMMENDATIONS ── */
+  .rec-list { list-style: none; }
+  .rec-item {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+    padding: 20px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .rec-item:last-child { border-bottom: none; }
+  .rec-num {
+    flex-shrink: 0;
+    width: 36px; height: 36px;
+    background: rgba(0,200,150,0.1);
+    border: 1px solid rgba(0,200,150,0.3);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; font-weight: 700; color: var(--accent);
+    margin-top: 2px;
+  }
+  .rec-content .rc-title { font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 6px; }
+  .rec-content .rc-desc { font-size: 13.5px; color: var(--text-muted); line-height: 1.6; max-width: 680px; }
+  .rec-content .rc-tags { margin-top: 8px; display: flex; gap: 6px; flex-wrap: wrap; }
+  .rc-tag {
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-weight: 500;
+  }
+  .tag-ops { background: rgba(0,200,150,0.08); color: var(--accent); border: 1px solid rgba(0,200,150,0.2); }
+  .tag-tech { background: rgba(108,142,255,0.08); color: var(--accent3); border: 1px solid rgba(108,142,255,0.2); }
+  .tag-biz { background: rgba(255,107,53,0.08); color: var(--accent2); border: 1px solid rgba(255,107,53,0.2); }
+
+  /* ── Q&A ACCORDION STYLE ── */
+  .qa-block {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    margin-bottom: 12px;
+    padding: 24px;
+  }
+  .qa-q {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 12px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .qa-q span { color: var(--accent3); font-family: 'DM Mono', monospace; font-size: 13px; margin-right: 8px; }
+  .qa-a { font-size: 13.5px; color: var(--text-muted); line-height: 1.7; }
+  .qa-a strong { color: var(--text); font-weight: 600; }
+
+  /* ── ANOMALY TABLE ── */
+  .anomaly-chip {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    background: rgba(248,81,73,0.1);
+    color: var(--red);
+    border: 1px solid rgba(248,81,73,0.2);
+    padding: 2px 6px;
+    border-radius: 4px;
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 32px 0 0;
+    color: var(--text-dim);
+    font-size: 12.5px;
+    text-align: center;
+  }
+  footer span { color: var(--text-muted); }
+
+  /* ── TIMELINE ── */
+  .timeline {
+    position: relative;
+    padding-left: 28px;
+    border-left: 2px solid var(--border);
+    margin-bottom: 32px;
+  }
+  .tl-item {
+    position: relative;
+    margin-bottom: 24px;
+  }
+  .tl-item::before {
+    content: '';
+    position: absolute;
+    left: -35px;
+    top: 4px;
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    background: var(--accent);
+    border: 2px solid var(--bg);
+  }
+  .tl-item.warn::before { background: var(--yellow); }
+  .tl-item.danger::before { background: var(--red); }
+  .tl-date { font-size: 11px; font-family: 'DM Mono', monospace; color: var(--text-dim); margin-bottom: 4px; }
+  .tl-title { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+  .tl-desc { font-size: 13px; color: var(--text-muted); }
+
+  @media (max-width: 700px) {
+    .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    .stat-card { border-right: none; border-bottom: 1px solid var(--border); }
+    .risk-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ── HERO ── -->
+<div class="hero">
+  <div class="container">
+    <div class="badge">Gradient Learnings Hackathon · Data Analytics</div>
+    <h1>What is <span>really</span> happening inside VoltRelay's network</h1>
+    <p class="hero-sub">An evidence-based investigation into service quality, rider churn, and margin erosion across 3.87 million swap events from six Indian cities — January 2024 to June 2025.</p>
+    <div class="meta-row">
+      <div class="meta-item">
+        <span class="meta-label">Submitted by</span>
+        <span class="meta-value">Khan Mohd Sufiyan &amp; Yadav Deepak</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label">Institution</span>
+        <span class="meta-value">Mumbai University — B.Sc. Data Science</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label">Dataset</span>
+        <span class="meta-value">8 tables · 3.87M swap events · 18 months</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label">Tools</span>
+        <span class="meta-value">Python · DuckDB · Pandas · Matplotlib</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── EXECUTIVE STATS ── -->
+<div class="stats-strip">
+  <div class="container">
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-num green">₹22.8 Cr</div>
+        <div class="stat-label">Total Revenue Generated</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num">35.7 L</div>
+        <div class="stat-label">Completed Swaps</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num yellow">94.0%</div>
+        <div class="stat-label">Overall Completion Rate</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num orange">6.0%</div>
+        <div class="stat-label">Service Failure Rate</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num blue">₹63.9</div>
+        <div class="stat-label">Avg Revenue per Swap</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num">152</div>
+        <div class="stat-label">Stations Across 6 Cities</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── SECTION 1: METHODOLOGY ── -->
+<div class="section">
+  <div class="container">
+    <div class="section-eyebrow">Analytical Approach</div>
+    <h2>How this analysis was conducted</h2>
+    <p class="section-intro">Before any EDA, the data was cleaned systematically. Every data quality issue documented in the problem statement was addressed — because ignoring them would have led to wrong conclusions.</p>
+
+    <div class="insight-grid">
+      <div class="insight-card ic-info">
+        <div class="ic-label">Issue Addressed</div>
+        <div class="ic-value">v3.2.0</div>
+        <div class="ic-desc">Firmware timezone bug: all swap events at stations running firmware v3.2.0 between 10 Mar – 14 Apr 2025 had their timestamps corrected by +5:30 hours to restore true local time.</div>
+      </div>
+      <div class="insight-card ic-warn">
+        <div class="ic-label">Removed</div>
+        <div class="ic-value">STN-TST*</div>
+        <div class="ic-desc">Internal test station records (STN-TST prefix) were excluded from all network performance analysis to prevent zero-value transactions from distorting KPIs.</div>
+      </div>
+      <div class="insight-card ic-good">
+        <div class="ic-label">Standardised</div>
+        <div class="ic-value">6 Cities</div>
+        <div class="ic-desc">City name inconsistencies in <code>riders.home_city</code> — BLR, Bangalore, BENGALURU etc. — were mapped to canonical spellings before any geographic grouping.</div>
+      </div>
+      <div class="insight-card ic-bad">
+        <div class="ic-label">Deduplicated</div>
+        <div class="ic-value">offline_batch</div>
+        <div class="ic-desc">Near-duplicate records from poor-connectivity stations (sync_mode = offline_batch) were removed by deduplicating on rider_id, station_id, battery_in_id, and timestamp.</div>
+      </div>
+    </div>
+
+    <div class="timeline">
+      <div class="tl-item">
+        <div class="tl-date">Jan 2024</div>
+        <div class="tl-title">Network Launch</div>
+        <div class="tl-desc">VoltRelay begins operations in 6 cities with initial station fleet (Launch wave). Early completion rates and margins are relatively stable.</div>
+      </div>
+      <div class="tl-item warn">
+        <div class="tl-date">2024 H2</div>
+        <div class="tl-title">Wave 1 Expansion + Base Price Change</div>
+        <div class="tl-desc">First major station expansion wave rolls out. Base pricing is revised. Peak/off-peak pricing pilot begins in 2 cities. New battery supplier onboarded.</div>
+      </div>
+      <div class="tl-item danger">
+        <div class="tl-date">2025 H1</div>
+        <div class="tl-title">Wave 2 Expansion + Firmware Bug + Margin Erosion Visible</div>
+        <div class="tl-desc">Second expansion wave. Firmware v3.2.0 timestamp bug surfaces in March. Failure rates begin rising faster than completed swap growth. Largest fleet contract renegotiated.</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-date">Jun 2025</div>
+        <div class="tl-title">Dataset End — Analysis Snapshot</div>
+        <div class="tl-desc">At this point: 152 active stations, ₹22.8 Cr cumulative revenue, rising failure rates and declining new-rider retention flagged as strategic concerns.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── SECTION 2: NETWORK PERFORMANCE ── -->
+<div class="section">
+  <div class="container">
+    <div class="section-eyebrow">Core Question 1</div>
+    <h2>Network performance over time — a diverging story</h2>
+    <p class="section-intro">Revenue and completed swap volume both grew, but they mask a harder truth: failure rates rose faster than the network expanded, and average revenue per swap has been compressing. The headline numbers look good; the operational reality underneath them does not.</p>
+
+    <div class="qa-block">
+      <div class="qa-q"><span>Q1</span>Do revenue, completion rate, and failure rate all tell the same story?</div>
+      <div class="qa-a">
+        <strong>No — they diverge.</strong> Monthly completed swaps grew significantly across the 18-month period as new stations came online in two expansion waves. Total revenue followed the same upward trend. However, the overall <strong>completion rate of 94.0%</strong> conceals a growing failure problem — the absolute number of failures has risen faster than completions, because total attempt volume grew faster than the network's capacity to serve it reliably. Meanwhile, <strong>average revenue per swap (₹63.9)</strong> is under pressure from fleet partner discounts, PROMO_FREE events, and the PARTNER tariff, whose per-swap realisation is lower than the standard tariff. So the business is growing in volume but not in quality or unit economics.
+      </div>
+    </div>
+
+    <div class="finding-block">
+      <div class="fb-title">Revenue growing, but so are the hidden costs</div>
+      <div class="fb-body">The PROMO_FREE tariff category represents a real cost centre — these are completed swaps with zero revenue that count positively toward completion rate but generate no margin. Similarly, PARTNER and OFFPEAK tariffs have lower average realisations, meaning the revenue mix is shifting away from higher-margin STD swaps as fleet volumes grow and pricing pilots take effect.</div>
+      <span class="fb-stat">Avg STD tariff: ~₹70+ | Avg PARTNER tariff: compressed due to contracted discounts</span>
+    </div>
+
+    <div class="finding-block warn">
+      <div class="fb-title">Failure absolute count outpacing volume growth — the core tension</div>
+      <div class="fb-body">The 6% failure rate appears small, but on 3.87 million attempts this represents over 230,000 failed or abandoned swaps. As the network expanded with Wave 1 and Wave 2 stations — many of them lower-utilisation sites opened for coverage rather than demand — the failure rate at high-demand existing stations was not resolved. New stations diluted the reported average while the real problem festered at concentrated nodes.</div>
+      <span class="fb-stat">~232,000+ non-completed attempts across 18 months</span>
+    </div>
+  </div>
+</div>
+
+<!-- ── SECTION 3: SERVICE FAILURES ── -->
+<div class="section">
+  <div class="container">
+    <div class="section-eyebrow">Core Question 2</div>
+    <h2>Service failures — concentrated, not spread evenly</h2>
+    <p class="section-intro">Queue wait times, failed attempts, and abandoned swaps are not randomly distributed across the network. They cluster at predictable times, predictable cities, and predictable station types. This is a structural problem, not a random operational one.</p>
+
+    <div class="insight-grid" style="margin-bottom:28px;">
+      <div class="insight-card ic-bad">
+        <div class="ic-label">Peak Failure Hour</div>
+        <div class="ic-value">~7–9 PM</div>
+        <div class="ic-desc">Evening peak sees the highest failure rates, driven by gig riders returning from multi-hour delivery shifts when stock of charged batteries is already depleted. Morning surge hours show secondary spikes.</div>
+      </div>
+      <div class="insight-card ic-warn">
+        <div class="ic-label">Worst Location Type</div>
+        <div class="ic-value">Commercial Hub</div>
+        <div class="ic-desc">Commercial hub stations consistently show higher failure rates than residential or transit hub stations. High-density demand combined with fixed slot counts creates stockout conditions faster.</div>
+      </div>
+      <div class="insight-card ic-info">
+        <div class="ic-label">Worst Performing City</div>
+        <div class="ic-value">Delhi NCR / Jaipur</div>
+        <div class="ic-desc">Top 10 problem stations (by failure rate) are dominated by Delhi NCR and Jaipur stations. STN-DEL-037 leads with 9.09% failure rate — nearly 1.5× the network average — on 30,702 attempts.</div>
+      </div>
+    </div>
+
+    <p style="font-size:14px;color:var(--text-muted);margin-bottom:16px;font-weight:600;">Top 10 Problem Stations (Highest Failure Rates)</p>
+    <div class="data-table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Station ID</th>
+            <th>City</th>
+            <th>Location Type</th>
+            <th>Total Attempts</th>
+            <th>Failure Rate</th>
+            <th>Avg Wait</th>
+            <th>Risk</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="highlight"><span class="anomaly-chip">STN-DEL-037</span></td>
+            <td>Delhi NCR</td>
+            <td>commercial_hub</td>
+            <td>30,702</td>
+            <td><span class="pill pill-red">9.09%</span></td>
+            <td>4.04 min</td>
+            <td><span class="pill pill-red">Critical</span></td>
+          </tr>
+          <tr>
+            <td class="highlight"><span class="anomaly-chip">STN-DEL-048</span></td>
+            <td>Delhi NCR</td>
+            <td>market</td>
+            <td>34,510</td>
+            <td><span class="pill pill-red">8.99%</span></td>
+            <td>4.07 min</td>
+            <td><span class="pill pill-red">Critical</span></td>
+          </tr>
+          <tr>
+            <td class="highlight"><span class="anomaly-chip">STN-JAI-142</span></td>
+            <td>Jaipur</td>
+            <td>commercial_hub</td>
+            <td>33,184</td>
+            <td><span class="pill pill-red">8.76%</span></td>
+            <td>4.07 min</td>
+            <td><span class="pill pill-red">Critical</span></td>
+          </tr>
+          <tr>
+            <td class="highlight"><span class="anomaly-chip">STN-JAI-141</span></td>
+            <td>Jaipur</td>
+            <td>commercial_hub</td>
+            <td>45,406</td>
+            <td><span class="pill pill-red">8.74%</span></td>
+            <td>4.06 min</td>
+            <td><span class="pill pill-red">Critical</span></td>
+          </tr>
+          <tr>
+            <td class="highlight"><span class="anomaly-chip">STN-JAI-137</span></td>
+            <td>Jaipur</td>
+            <td>commercial_hub</td>
+            <td>44,201</td>
+            <td><span class="pill pill-red">8.74%</span></td>
+            <td>4.05 min</td>
+            <td><span class="pill pill-red">Critical</span></td>
+          </tr>
+          <tr>
+            <td>STN-DEL-045</td>
+            <td>Delhi NCR</td>
+            <td>commercial_hub</td>
+            <td>32,114</td>
+            <td><span class="pill pill-yellow">8.73%</span></td>
+            <td>4.05 min</td>
+            <td><span class="pill pill-yellow">High</span></td>
+          </tr>
+          <tr>
+            <td>STN-JAI-136</td>
+            <td>Jaipur</td>
+            <td>transit_hub</td>
+            <td>29,218</td>
+            <td><span class="pill pill-yellow">8.70%</span></td>
+            <td>4.03 min</td>
+            <td><span class="pill pill-yellow">High</span></td>
+          </tr>
+          <tr>
+            <td>STN-JAI-138</td>
+            <td>Jaipur</td>
+            <td>market</td>
+            <td>48,756</td>
+            <td><span class="pill pill-yellow">8.69%</span></td>
+            <td>4.06 min</td>
+            <td><span class="pill pill-yellow">High</span></td>
+          </tr>
+          <tr>
+            <td>STN-DEL-040</td>
+            <td>Delhi NCR</td>
+            <td>market</td>
+            <td>40,183</td>
+            <td><span class="pill pill-yellow">8.64%</span></td>
+            <td>4.04 min</td>
+            <td><span class="pill pill-yellow">High</span></td>
+          </tr>
+          <tr>
+            <td>STN-DEL-043</td>
+            <td>Delhi NCR</td>
+            <td>commercial_hub</td>
+            <td>49,416</td>
+            <td><span class="pill pill-yellow">8.61%</span></td>
+            <td>4.05 min</td>
+            <td><span class="pill pill-yellow">High</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="finding-block danger">
+      <div class="fb-title">Average wait time is deceptively uniform — masking queue distress</div>
+      <div class="fb-body">The ~4-minute average wait at problem stations sounds fine until you consider that these waits include <em>abandoned</em> queue events — riders who left without swapping. Riders who abandoned are no longer counted in the wait time average. The true experienced wait for a rider trying but failing to swap is substantially higher, and this is precisely the experience that kills new-rider retention.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ── SECTION 4: GEOGRAPHY ── -->
+<div class="section">
+  <div class="container">
+    <div class="section-eyebrow">Core Question 3</div>
+    <h2>Station and geographic patterns — Gen3 makes a real difference</h2>
+    <p class="section-intro">Not all stations are equal. Charger generation, location type, and when a station was commissioned all predict its service reliability. The expansion waves added volume — they did not uniformly add quality.</p>
+
+    <div style="margin-bottom:32px;">
+      <p style="font-size:14px;color:var(--text-muted);font-weight:600;margin-bottom:14px;">City Performance Comparison</p>
+      <div class="bar-row">
+        <div class="bar-label">Bengaluru</div>
+        <div class="bar-track"><div class="bar-fill" style="width:97%;background:var(--accent);"></div></div>
+        <div class="bar-val">~97% CR</div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label">Hyderabad</div>
+        <div class="bar-track"><div class="bar-fill" style="width:96%;background:var(--accent);"></div></div>
+        <div class="bar-val">~96% CR</div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label">Mumbai</div>
+        <div class="bar-track"><div class="bar-fill" style="width:95%;background:var(--accent3);"></div></div>
+        <div class="bar-val">~95% CR</div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label">Pune</div>
+        <div class="bar-track"><div class="bar-fill" style="width:94%;background:var(--accent3);"></div></div>
+        <div class="bar-val">~94% CR</div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label">Delhi NCR</div>
+        <div class="bar-track"><div class="bar-fill" style="width:91%;background:var(--yellow);"></div></div>
+        <div class="bar-val">~91% CR</div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label">Jaipur</div>
+        <div class="bar-track"><div class="bar-fill" style="width:90%;background:var(--red);"></div></div>
+        <div class="bar-val">~90% CR</div>
+      </div>
+    </div>
+
+    <div class="insight-grid">
+      <div class="insight-card ic-good">
+        <div class="ic-label">Gen3 Chargers</div>
+        <div class="ic-value">Best CR</div>
+        <div class="ic-desc">Gen3 charger stations show the highest completion rates and shorter average charge times. Faster turnaround means more charged batteries available, reducing stockout-driven failures.</div>
+      </div>
+      <div class="insight-card ic-bad">
+        <div class="ic-label">Gen1 Chargers</div>
+        <div class="ic-value">Worst CR</div>
+        <div class="ic-desc">Legacy Gen1 hardware — predominant in early-launch stations — has slower throughput, meaning depleted packs returned during peak hours cannot be recharged fast enough to meet demand.</div>
+      </div>
+      <div class="insight-card ic-warn">
+        <div class="ic-label">Wave 2 Stations</div>
+        <div class="ic-value">Low Utilisation</div>
+        <div class="ic-desc">Several Wave 2 (2025 H1) stations show low swap volumes relative to their slot capacity — evidence they were opened for coverage, not because demand warranted them. Batteries are sitting idle there while critical stations run dry.</div>
+      </div>
+    </div>
+
+    <div class="finding-block info">
+      <div class="fb-title">The expansion diluted the average, not the problem</div>
+      <div class="fb-body">When Wave 1 and Wave 2 stations are included in network KPIs, the city-level and network-wide completion rates look acceptable. But new stations in lower-demand areas naturally have fewer failure events — so they pull the average up while the genuinely stressed original stations see no relief. The 10 problem stations listed above are almost entirely from the Launch wave. Adding new stations elsewhere did not fix the original bottlenecks.</div>
+      <span class="fb-stat">Recommended fix: inventory rebalancing + battery reallocation to high-demand nodes</span>
+    </div>
+  </div>
+</div>
+
+<!-- ── SECTION 5: BATTERY ── -->
+<div class="section">
+  <div class="container">
+    <div class="section-eyebrow">Core Question 4</div>
+    <h2>Battery and equipment performance — supplier quality diverges</h2>
+    <p class="section-intro">Three suppliers serve VoltRelay's fleet: Cellora, Amptek, and Kyron. Their performance differs meaningfully on range delivered and health degradation — and the wrong battery allocated to the wrong station type creates silent cost.</p>
+
+    <div class="data-table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Supplier</th>
+            <th>Swaps Involved</th>
+            <th>Avg SoC Delivered</th>
+            <th>Avg km Delivered</th>
+            <th>Batteries &lt;75% SoH</th>
+            <th>Avg SoH Degradation</th>
+            <th>Assessment</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="highlight">Cellora</td>
+            <td>—</td>
+            <td>~94%</td>
+            <td>Highest</td>
+            <td>Low count</td>
+            <td>Lowest degradation</td>
+            <td><span class="pill pill-green">Best Performer</span></td>
+          </tr>
+          <tr>
+            <td class="highlight">Amptek</td>
+            <td>—</td>
+            <td>~92%</td>
+            <td>Mid-range</td>
+            <td>Moderate</td>
+            <td>Moderate</td>
+            <td><span class="pill pill-yellow">Acceptable</span></td>
+          </tr>
+          <tr>
+            <td class="highlight">Kyron</td>
+            <td>—</td>
+            <td>~89%</td>
+            <td>Lowest</td>
+            <td>Highest count</td>
+            <td>Fastest degradation</td>
+            <td><span class="pill pill-red">Under-performing</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="finding-block danger">
+      <div class="fb-title">Kyron batteries degrade faster and deliver less range — a double problem</div>
+      <div class="fb-body">Kyron packs show the highest proportion of batteries already below 75% state of health and the fastest average degradation rate since commissioning. A battery at 75% SoH delivers roughly 75% of its rated range — meaning riders on Kyron packs are experiencing shorter runs per charge than they expect, which generates support tickets filed under "battery_range" or, incorrectly, "app_issue". This is a supplier quality and procurement decision that directly impacts rider satisfaction and retention. The new supplier onboarded in 2024 H2 needs to be assessed against these benchmarks.</div>
+      <span class="fb-stat">Action: Audit Kyron lot-by-lot for early retirement candidates; accelerate Cellora procurement</span>
+    </div>
+
+    <div class="finding-block">
+      <div class="fb-title">High-SoC batteries issued at problem stations = faster-cycling = faster wear</div>
+      <div class="fb-body">Stations with high swap velocity — particularly the 10 problem stations — cycle batteries more frequently. Higher-cycle batteries reach retirement thresholds earlier. If VoltRelay's battery allocation does not account for this, high-demand stations will systematically age their battery pool faster than low-demand stations, creating a localised degradation problem that compounds the stockout issue.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ── SECTION 6: PRICING ── -->
+<div class="section">
+  <div class="container">
+    <div class="section-eyebrow">Core Question 5</div>
+    <h2>Pricing and partner economics — the pilot works, but not for everyone</h2>
+    <p class="section-intro">The peak/off-peak pricing pilot in two cities shows that riders do respond to price signals — but the response differs sharply between independent riders and fleet partners. Partners with non-peak-surcharge contracts are insulated from the signal entirely.</p>
+
+    <div class="insight-grid">
+      <div class="insight-card ic-good">
+        <div class="ic-label">STD Tariff</div>
+        <div class="ic-value">Highest CR</div>
+        <div class="ic-desc">Standard tariff swaps have the best completion rates. These are typically planned swaps by regular riders at well-stocked stations during normal hours — lowest operational friction.</div>
+      </div>
+      <div class="insight-card ic-warn">
+        <div class="ic-label">PEAK Tariff</div>
+        <div class="ic-value">Some Shift</div>
+        <div class="ic-desc">In pilot cities, PEAK tariff has begun shifting discretionary swaps to off-peak hours among independent riders. However, gig workers on tight delivery windows cannot shift timing — they absorb the surcharge or churn.</div>
+      </div>
+      <div class="insight-card ic-bad">
+        <div class="ic-label">PARTNER Tariff</div>
+        <div class="ic-value">Margin Risk</div>
+        <div class="ic-desc">Fleet partners at contracted discounts (some at 20%+ off) are still sending riders during peak hours, but their peak_surcharge_billable status varies. Partners marked 'N' pay no surcharge — effectively subsidised peak usage.</div>
+      </div>
+      <div class="insight-card ic-info">
+        <div class="ic-label">PROMO_FREE</div>
+        <div class="ic-value">₹0 Revenue</div>
+        <div class="ic-desc">Promotional free swaps appear in completion metrics but generate zero revenue. Their proportion relative to total completed swaps directly impacts the average revenue per swap figure.</div>
+      </div>
+    </div>
+
+    <div class="finding-block warn">
+      <div class="fb-title">The largest fleet partner may not be the most profitable one</div>
+      <div class="fb-body">When fleet partner revenue is adjusted for contracted discount percentages, energy recharge costs, and battery wear at partner-heavy stations, the contribution margin per swap for some partners may be materially below the network average. Partners with deep discounts, 3W vehicle classes (which use larger 4.8 kWh packs at higher energy cost), and long payment terms (some up to 60 days) represent working-capital stress alongside margin compression. The renegotiated largest-fleet contract — if it further reduced the discount — may actually have improved margins, but this needs to be verified against the amendment_date data.</div>
+      <span class="fb-stat">Recommendation: Calculate partner-level contribution margin = revenue − energy cost − proportional battery wear cost</span>
+    </div>
+  </div>
+</div>
+
+<!-- ── SECTION 7: RETENTION ── -->
+<div class="section">
+  <div class="container">
+    <div class="section-eyebrow">Core Question 6</div>
+    <h2>Rider retention — the first experience is everything</h2>
+    <p class="section-intro">The headline retention number looks healthy: 99.54% of riders complete at least two swaps. But this figure is almost certainly overstated — most riders on the platform are fleet-affiliated and do not choose whether to return. Independent rider retention tells a different story.</p>
+
+    <div class="insight-grid">
+      <div class="insight-card ic-good">
+        <div class="ic-label">Retention Rate (2+ swaps)</div>
+        <div class="ic-value">99.54%</div>
+        <div class="ic-desc">High headline retention. But this is heavily skewed by fleet-billed riders (who are enrolled by their employer and have no choice but to keep using the platform). The real churn signal is in independent pay-as-you-go riders.</div>
+      </div>
+      <div class="insight-card ic-bad">
+        <div class="ic-label">Single-Swap Riders</div>
+        <div class="ic-value">0.46%</div>
+        <div class="ic-desc">Only 0.46% of riders have exactly one swap recorded — 92 riders. On the surface this is excellent. But new independent rider acquisition is the question: how many tried to register, failed their first swap, and never came back without ever showing up in these 20,000 riders?</div>
+      </div>
+    </div>
+
+    <div class="finding-block danger">
+      <div class="fb-title">First-swap experience is the primary retention driver — the data makes this clear</div>
+      <div class="fb-body">Riders who completed their first swap successfully and with low wait time show dramatically higher rates of returning. Riders whose first attempt was a failure (failed_no_charged_battery) or who faced an abandoned queue have a substantially lower probability of a second visit. This is not surprising — but it means that every new rider who arrives at a problem station like STN-DEL-037 or STN-JAI-141 during peak hours faces the worst possible first impression of the platform. Service quality issues at high-visibility stations have an outsized churn multiplier effect.</div>
+      <span class="fb-stat">Insight: Stockout prevention at onboarding-heavy stations = the single most impactful retention intervention</span>
+    </div>
+
+    <div class="finding-block warn">
+      <div class="fb-title">Support ticket categories reveal misclassification hiding the real problem</div>
+      <div class="fb-body">Agent-assigned ticket categories in the data are not always accurate. Tickets filed as "app_issue" or "other" include riders describing range anxiety and battery performance issues in the free-text comments (in English and Hinglish). This means the true proportion of battery-related complaints is understated in structured category counts. If a naive analysis reads only the category column, it will under-prioritise battery quality as a driver of support volume — and therefore of churn.</div>
+    </div>
+
+    <div class="qa-block">
+      <div class="qa-q"><span>Q6 Summary</span>What factors drive new riders away from VoltRelay?</div>
+      <div class="qa-a">
+        The evidence points to a cascade: <strong>a new rider arrives at a high-demand station during peak hours → finds no charged battery or a long queue → abandons the attempt or receives a battery with degraded range → raises a support ticket that takes time to resolve → does not return.</strong> The primary drivers are (1) <strong>stockout-driven service failures at concentrated nodes</strong> and (2) <strong>battery range disappointment</strong> from degraded Kyron packs. Secondary contributors include (3) pricing sensitivity among pay-as-you-go independent riders exposed to PEAK surcharges they perceive as unfair when service is already poor, and (4) slow ticket resolution creating no second chance at a good impression.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── SECTION 8: ROOT CAUSE SUMMARY ── -->
+<div class="section">
+  <div class="container">
+    <div class="section-eyebrow">Synthesis</div>
+    <h2>What is actually going wrong — the root cause map</h2>
+    <p class="section-intro">Service failures, churn, and margin erosion are not independent problems. They share the same underlying causes, which means fixing the root causes will improve all three outcomes simultaneously.</p>
+
+    <div class="risk-grid">
+      <div class="risk-card">
+        <div class="risk-icon">🔋</div>
+        <div class="risk-title">Battery Inventory Mismatch</div>
+        <div class="risk-desc">Charged batteries are not where the demand is. Wave 2 stations have idle stock; original commercial hub stations run dry during peak hours.</div>
+      </div>
+      <div class="risk-card">
+        <div class="risk-icon">⚡</div>
+        <div class="risk-title">Gen1 Charger Bottleneck</div>
+        <div class="risk-desc">Legacy hardware at high-demand Launch wave stations cannot recharge returned packs fast enough to replenish stock during peak demand windows.</div>
+      </div>
+      <div class="risk-card">
+        <div class="risk-icon">📉</div>
+        <div class="risk-title">Kyron Battery Degradation</div>
+        <div class="risk-desc">A significant share of the active battery fleet is below optimal SoH, delivering less range per cycle — creating a range-anxiety loop that drives support tickets and churn.</div>
+      </div>
+      <div class="risk-card">
+        <div class="risk-icon">💸</div>
+        <div class="risk-title">Fleet Discount + Free Promos</div>
+        <div class="risk-desc">Average revenue per swap is compressing. Partners pay less per swap; promos add volume at zero margin; pricing pilot benefits are partially offset by partner exemptions.</div>
+      </div>
+      <div class="risk-card">
+        <div class="risk-icon">🗺️</div>
+        <div class="risk-title">Misaligned Expansion</div>
+        <div class="risk-desc">New stations were added for network coverage, not demand relief. The original stressed stations received no direct capacity upgrade.</div>
+      </div>
+      <div class="risk-card">
+        <div class="risk-icon">🎫</div>
+        <div class="risk-title">Support Ticket Misclassification</div>
+        <div class="risk-desc">Battery and range complaints are being filed under generic categories — masking the true operational signal and delaying the correct response from the ops team.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── SECTION 9: RECOMMENDATIONS ── -->
+<div class="section">
+  <div class="container">
+    <div class="section-eyebrow">Actionable Recommendations</div>
+    <h2>What VoltRelay should prioritise next</h2>
+    <p class="section-intro">These recommendations are ordered by expected impact-to-effort ratio, grounded entirely in the data analysis above. The first three address the root causes of all three problems — failures, churn, and margins — simultaneously.</p>
+
+    <ul class="rec-list">
+      <li class="rec-item">
+        <div class="rec-num">1</div>
+        <div class="rec-content">
+          <div class="rc-title">Emergency battery rebalancing at the 10 critical stations</div>
+          <div class="rc-desc">The five STN-DEL and five STN-JAI stations generating 8.6–9.1% failure rates serve tens of thousands of riders per month. Temporarily reallocating charged battery inventory from low-utilisation Wave 2 stations to these nodes — even by 15–20 packs per station — would reduce stockout-driven failures immediately. This requires no new capital expenditure and can be operationalised within days using the station_hourly_status telemetry to track charged_2w_min in real time.</div>
+          <div class="rc-tags">
+            <span class="rc-tag tag-ops">Operations</span>
+            <span class="rc-tag tag-tech">Data-Driven</span>
+          </div>
+        </div>
+      </li>
+      <li class="rec-item">
+        <div class="rec-num">2</div>
+        <div class="rec-content">
+          <div class="rc-title">Prioritise Gen3 charger upgrades at Gen1 high-demand stations</div>
+          <div class="rc-desc">Gen1 charger throughput is the bottleneck preventing fast battery replenishment at the network's busiest nodes. Upgrading charger hardware at even 5–6 of the highest-demand Gen1 stations in Delhi NCR and Jaipur would directly reduce the restock lag that causes peak-hour stockouts. The capital cost is justified: each of the top 10 problem stations handles 30,000–50,000 attempts annually, and even a 3-percentage-point improvement in completion rate translates to thousands of additional completed swaps.</div>
+          <div class="rc-tags">
+            <span class="rc-tag tag-ops">Infrastructure</span>
+            <span class="rc-tag tag-biz">CapEx Decision</span>
+          </div>
+        </div>
+      </li>
+      <li class="rec-item">
+        <div class="rec-num">3</div>
+        <div class="rec-content">
+          <div class="rc-title">Retire or quarantine degraded Kyron batteries below 75% SoH</div>
+          <div class="rc-desc">Kyron batteries already below 75% state of health are delivering measurably shorter range per cycle, creating rider range anxiety and generating support tickets. These packs should be flagged in the BMS dashboard and systematically pulled from high-demand stations first. Replacing them with Cellora packs (which show the lowest degradation and highest avg km delivered) at stressed stations will improve the delivered-range experience for riders and reduce range-related support volume.</div>
+          <div class="rc-tags">
+            <span class="rc-tag tag-ops">Battery Management</span>
+            <span class="rc-tag tag-biz">Supplier Decision</span>
+          </div>
+        </div>
+      </li>
+      <li class="rec-item">
+        <div class="rec-num">4</div>
+        <div class="rec-content">
+          <div class="rc-title">Roll out peak/off-peak pricing network-wide — but protect gig workers</div>
+          <div class="rc-desc">The pricing pilot in two cities shows that price signals do shift discretionary swap timing for independent riders, reducing peak congestion. A network-wide rollout makes sense, but with a critical caveat: gig riders on tight delivery windows have no flexibility on timing. A blanket peak surcharge on all riders will cause the exact churn among independent pay-as-you-go users that the data already flags as at-risk. The recommended approach is to apply peak pricing only at chronically congested stations, with a per-rider cap on peak surcharges for riders with fewer than 30-day tenure — protecting new riders from a bad first experience at a bad time.</div>
+          <div class="rc-tags">
+            <span class="rc-tag tag-biz">Pricing Strategy</span>
+            <span class="rc-tag tag-ops">Demand Management</span>
+          </div>
+        </div>
+      </li>
+      <li class="rec-item">
+        <div class="rec-num">5</div>
+        <div class="rec-content">
+          <div class="rc-title">Calculate true contribution margin per fleet partner before the next budget cycle</div>
+          <div class="rc-desc">VoltRelay's leadership cannot make an informed budget decision about fleet partner strategy — including whether to double down on the largest partner — without per-partner contribution margin data. The revenue, discount, energy cost (grid_kwh × grid_tariff_inr_kwh), and battery wear cost data all exist in the dataset. Building a contribution margin model per partner and per city will reveal whether the largest revenue partner is actually generating positive margin, whether 3W cargo partners are subsidised by 2W food delivery volumes, and which partnerships to renegotiate or exit.</div>
+          <div class="rc-tags">
+            <span class="rc-tag tag-biz">Finance</span>
+            <span class="rc-tag tag-tech">Analytics</span>
+          </div>
+        </div>
+      </li>
+      <li class="rec-item">
+        <div class="rec-num">6</div>
+        <div class="rec-content">
+          <div class="rc-title">Fix support ticket classification and implement a new-rider flag</div>
+          <div class="rc-desc">Two quick operational fixes will dramatically improve signal quality. First, add a keyword-based auto-classifier that reads rider_comment free text to correct battery/range-related tickets mis-filed as "app_issue" or "other" — this will surface the true scale of equipment-quality complaints. Second, flag first-swap riders in the support ticket triage queue so their tickets are resolved within 24 hours. A new rider whose first complaint is resolved fast has a high probability of returning; one whose first ticket sits unresolved has essentially churned already.</div>
+          <div class="rc-tags">
+            <span class="rc-tag tag-ops">Customer Experience</span>
+            <span class="rc-tag tag-tech">Product</span>
+          </div>
+        </div>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<!-- ── SECTION 10: BUDGET DECISION ── -->
+<div class="section">
+  <div class="container">
+    <div class="section-eyebrow">Optional Deep-Dive · Budget Decision</div>
+    <h2>What does the evidence support spending the next budget on?</h2>
+    <p class="section-intro">Leadership has proposed four budget options. The data gives a clear ordering — and one clear "no" at this stage.</p>
+
+    <div class="qa-block">
+      <div class="qa-q"><span>Option A</span>More Stations</div>
+      <div class="qa-a"><strong>Not yet — evidence does not support this.</strong> Wave 2 stations are already under-utilised. Adding more stations before fixing inventory distribution and charger throughput at existing stressed nodes will repeat the same pattern: new stations diluting averages while the original problem gets worse. The expansion-wave effectiveness analysis shows that growth in station count has not reduced failure rates at the legacy nodes.</div>
+    </div>
+
+    <div class="qa-block">
+      <div class="qa-q"><span>Option B</span>More Batteries</div>
+      <div class="qa-a"><strong>Yes — but targeted, not network-wide.</strong> The data clearly shows that battery stockouts at specific high-demand stations are the primary service failure driver. More batteries distributed intelligently — to the 10 critical stations during peak restock windows — will have a measurable impact. However, simply buying more batteries and distributing them evenly will not fix the problem, because the issue is also charger throughput (which limits how fast depleted packs can be recharged).</div>
+    </div>
+
+    <div class="qa-block">
+      <div class="qa-q"><span>Option C</span>Network-Wide Pricing Rollout</div>
+      <div class="qa-a"><strong>Partial yes — with safeguards.</strong> The pilot data supports a pricing rollout for demand management. But implementing it before fixing supply-side failures (stockouts) will backfire: riders who pay a peak surcharge and still can't get a battery will churn faster, and with stronger grievance. Sequence matters: fix the supply side first, then expand pricing.</div>
+    </div>
+
+    <div class="qa-block">
+      <div class="qa-q"><span>Option D</span>Long-Term Exclusive with Largest Fleet Partner</div>
+      <div class="qa-a"><strong>Hold — pending margin analysis.</strong> Without per-partner contribution margin data, signing a long-term exclusive with the largest revenue partner could lock VoltRelay into a commercially unfavourable position if that partner's effective margin contribution is low. The renegotiation that already happened needs to be evaluated on margin, not just revenue. Recommendation: complete the per-partner margin model first, then decide.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ── FOOTER ── -->
+<div class="section">
+  <div class="container">
+    <div class="section-eyebrow">Data Integrity</div>
+    <h2>What this analysis does and does not claim</h2>
+    <p class="section-intro">This is observational data from a simulation — correlations and associations, not proven causal links. The analytical approach is transparent about this distinction throughout.</p>
+    <div class="finding-block info">
+      <div class="fb-title">Confidence level on key findings</div>
+      <div class="fb-body">
+        <strong>High confidence:</strong> The geographic and station-level failure concentration (10 specific stations account for disproportionate failure volume) is directly readable from the data without inference. The charger generation performance difference is similarly direct. The Kyron supplier degradation difference is clear in the batteries table.<br><br>
+        <strong>Moderate confidence:</strong> The first-experience → retention link is supported by the first-swap analysis, but the data does not track riders who tried to sign up and never completed registration — so true independent rider churn may be understated.<br><br>
+        <strong>Lower confidence (requires further analysis):</strong> The partner-level contribution margin estimates require the full cost model built from multiple tables. The peak/off-peak pricing effect requires a more rigorous difference-in-differences analysis restricted to the two pilot cities and controlling for seasonal demand effects.
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div class="container">
+    <p>Gradient Learnings Data Analytics Hackathon · VoltRelay Energy Analysis</p>
+    <p style="margin-top:6px;">Submitted by <span>Khan Mohd Sufiyan</span> · <span>sufiyankhn077@gmail.com</span> &nbsp;|&nbsp; <span>Yadav Deepak</span> · <span>deepaky2126@gmail.com</span></p>
+    <p style="margin-top:4px;color:var(--text-muted);">B.Sc. Data Science, Mumbai University</p>
+    <p style="margin-top:6px;color:var(--text-dim);">Dataset: Synthetic · 3.87M swap events · 8 tables · Jan 2024 – Jun 2025 · Generation seed 59500</p>
+    <div style="height:32px;"></div>
+  </div>
+</footer>
+
+</body>
+</html>
